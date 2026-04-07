@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Estação Meteorológica IoT</title>
+  <meta name="description" content="Painel principal com leituras em tempo real da estação meteorológica IoT">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <nav class="navbar">
+    <a class="logo" href="/">🌦️ Estação IoT</a>
+    <div class="nav-links">
+      <a href="/" class="active">Dashboard</a>
+      <a href="/historico.html">Histórico</a>
+    </div>
+  </nav>
+
+  <div id="toast"></div>
+
+  <main class="container">
+    <div class="page-header">
+      <h1>Dashboard</h1>
+      <!-- Indicador de status da conexão WebSocket -->
+      <div class="refresh-badge" id="wsBadge">
+        <span class="pulse" id="wsPulse" style="background:#8a6a5c"></span>
+        <span id="wsStatus">Conectando...</span>
+      </div>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card stat-amber"><div class="icon">🌡️</div><div class="val skeleton" style="width:80px;height:2rem"></div><div class="lbl">Média Temperatura</div></div>
+      <div class="stat-card stat-red">  <div class="icon">🔥</div><div class="val skeleton" style="width:80px;height:2rem"></div><div class="lbl">Máxima Temperatura</div></div>
+      <div class="stat-card stat-blue"> <div class="icon">❄️</div><div class="val skeleton" style="width:80px;height:2rem"></div><div class="lbl">Mínima Temperatura</div></div>
+      <div class="stat-card stat-cyan"> <div class="icon">💧</div><div class="val skeleton" style="width:80px;height:2rem"></div><div class="lbl">Média Umidade</div></div>
+    </div>
+
+    <!-- Gráfico temporal -->
+    <div class="card chart-card">
+      <div class="card-header"><h2>Variação Temporal (últimas 20 leituras)</h2></div>
+      <canvas id="grafico"></canvas>
+    </div>
+
+    <!-- Tabela últimas leituras -->
+    <div class="card">
+      <div class="card-header"><h2>Últimas 10 Leituras</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Temperatura</th><th>Umidade</th>
+              <th>Pressão</th><th>Local</th><th>Data/Hora</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaCorpo"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ── Globals ───────────────────────────────────────────
+    let chart = null;
+    const MAX_TABLE = 10;
+    const MAX_CHART = 20;
+
+    // ── Utils ─────────────────────────────────────────────
+    function fmt(n, u) { return n != null ? n.toFixed(1) + u : '—'; }
+    function formatTs(ts) {
+      const d = new Date(ts);
+      return isNaN(d) ? ts : d.toLocaleString('pt-BR');
+    }
+    function formatHora(ts) {
+      const d = new Date(ts);
+      return isNaN(d) ? ts : d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    }
+    function toast(msg, err = false) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = 'show' + (err ? ' error' : '');
+      setTimeout(() => el.className = '', 3000);
+    }
+    function rowHTML(l) {
+      return `<tr>
+        <td><span style="color:var(--muted)">#${l.id}</span></td>
+        <td><strong style="color:#CE422B">${fmt(l.temperatura,'°C')}</strong></td>
+        <td><strong style="color:#e8792a">${fmt(l.umidade,'%')}</strong></td>
+        <td>${l.pressao != null ? fmt(l.pressao,' hPa') : '<span style="color:var(--muted)">—</span>'}</td>
+        <td><span class="badge badge-loc">${l.localizacao ?? 'Lab'}</span></td>
+        <td style="color:var(--muted);font-size:.8rem">${formatTs(l.timestamp)}</td>
+      </tr>`;
+    }
+
+    // ── Estatísticas ──────────────────────────────────────
+    async function carregarStats() {
+      const r = await fetch('/api/estatisticas');
+      if (!r.ok) return;
+      const s = await r.json();
+      document.getElementById('statsGrid').innerHTML = `
+        <div class="stat-card stat-amber"><div class="icon">🌡️</div><div class="val">${fmt(s.media_temp,'°C')}</div><div class="lbl">Média Temperatura</div></div>
+        <div class="stat-card stat-red">  <div class="icon">🔥</div><div class="val">${fmt(s.max_temp,'°C')}</div><div class="lbl">Máxima Temperatura</div></div>
+        <div class="stat-card stat-blue"> <div class="icon">❄️</div><div class="val">${fmt(s.min_temp,'°C')}</div><div class="lbl">Mínima Temperatura</div></div>
+        <div class="stat-card stat-cyan"> <div class="icon">💧</div><div class="val">${fmt(s.media_umid,'%')}</div><div class="lbl">Média Umidade</div></div>`;
+    }
+
+    // ── Gráfico ───────────────────────────────────────────
+    async function carregarGrafico() {
+      const r = await fetch('/api/grafico?limit=20');
+      if (!r.ok) return;
+      const dados = await r.json();
+      renderizarGrafico(dados);
+    }
+
+    function renderizarGrafico(dados) {
+      const labels = dados.map(d => formatHora(d.timestamp));
+      const temps  = dados.map(d => d.temperatura);
+      const umids  = dados.map(d => d.umidade);
+      const ctx    = document.getElementById('grafico').getContext('2d');
+
+      if (chart) {
+        chart.data.labels    = labels;
+        chart.data.datasets[0].data = temps;
+        chart.data.datasets[1].data = umids;
+        chart.update('none');
+        return;
+      }
+
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Temperatura (°C)', data: temps, borderColor: '#CE422B',
+              backgroundColor: 'rgba(206,66,43,0.1)', tension: 0.4,
+              pointRadius: 4, pointBackgroundColor: '#CE422B', yAxisID: 'yTemp' },
+            { label: 'Umidade (%)', data: umids, borderColor: '#f5a623',
+              backgroundColor: 'rgba(245,166,35,0.08)', tension: 0.4,
+              pointRadius: 4, pointBackgroundColor: '#f5a623', yAxisID: 'yUmid' },
+          ]
+        },
+        options: {
+          responsive: true, animation: { duration: 400 },
+          interaction: { mode: 'index', intersect: false },
+          plugins: { legend: { labels: { color: '#8a6a5c' } } },
+          scales: {
+            x:     { ticks: { color: '#8a6a5c' }, grid: { color: 'rgba(206,66,43,0.08)' } },
+            yTemp: { position: 'left',  ticks: { color: '#CE422B', callback: v => v+'°C' }, grid: { color: 'rgba(206,66,43,0.08)' } },
+            yUmid: { position: 'right', ticks: { color: '#f5a623', callback: v => v+'%'  }, grid: { drawOnChartArea: false } },
+          }
+        }
+      });
+    }
+
+    // Adiciona ponto ao gráfico sem recarregar tudo
+    function adicionarPontoGrafico(l) {
+      if (!chart) return;
+      chart.data.labels.push(formatHora(l.timestamp));
+      chart.data.datasets[0].data.push(l.temperatura);
+      chart.data.datasets[1].data.push(l.umidade);
+      if (chart.data.labels.length > MAX_CHART) {
+        chart.data.labels.shift();
+        chart.data.datasets.forEach(d => d.data.shift());
+      }
+      chart.update('none');
+    }
+
+    // ── Tabela ────────────────────────────────────────────
+    async function carregarTabela() {
+      const r = await fetch('/api/leituras?limit=10');
+      if (!r.ok) return;
+      const { dados } = await r.json();
+      document.getElementById('tabelaCorpo').innerHTML =
+        dados.length ? dados.map(rowHTML).join('') :
+        '<tr><td colspan="6" style="text-align:center;color:var(--muted)">Sem leituras</td></tr>';
+    }
+
+    // Prepend nova linha na tabela, limita a MAX_TABLE
+    function adicionarLinhaTabela(l) {
+      const corpo = document.getElementById('tabelaCorpo');
+      corpo.insertAdjacentHTML('afterbegin', rowHTML(l));
+      while (corpo.rows.length > MAX_TABLE) corpo.deleteRow(corpo.rows.length - 1);
+    }
+
+    // ── Carga inicial ─────────────────────────────────────
+    async function carregarTudo() {
+      await Promise.all([carregarStats(), carregarGrafico(), carregarTabela()]);
+    }
+
+    // ── WebSocket ─────────────────────────────────────────
+    let wsReconnectDelay = 1000;
+
+    function setWsStatus(online) {
+      const pulse  = document.getElementById('wsPulse');
+      const status = document.getElementById('wsStatus');
+      if (online) {
+        pulse.style.background = '#e8792a';
+        status.textContent = 'Tempo real';
+      } else {
+        pulse.style.background = '#8a6a5c';
+        status.textContent = 'Reconectando...';
+      }
+    }
+
+    function conectarWS() {
+      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const ws = new WebSocket(`${proto}//${location.host}/ws`);
+
+      ws.onopen = () => {
+        console.log('✅ WebSocket conectado');
+        wsReconnectDelay = 1000;
+        setWsStatus(true);
+        carregarTudo(); // garante dados frescos ao reconectar
+      };
+
+      ws.onmessage = ({ data }) => {
+        try {
+          const leitura = JSON.parse(data);
+          // Atualiza dashboard sem reload
+          adicionarLinhaTabela(leitura);
+          adicionarPontoGrafico(leitura);
+          carregarStats(); // recalcula média/min/max com novo total
+          toast(`📥 Nova leitura: ${leitura.temperatura?.toFixed(1)}°C — ${leitura.umidade?.toFixed(1)}%`);
+        } catch (e) {
+          console.warn('WS msg inválida:', e);
+        }
+      };
+
+      ws.onclose = () => {
+        setWsStatus(false);
+        console.warn(`🔌 WS fechado. Reconectando em ${wsReconnectDelay}ms`);
+        setTimeout(conectarWS, wsReconnectDelay);
+        wsReconnectDelay = Math.min(wsReconnectDelay * 2, 30_000); // backoff exponencial até 30s
+      };
+
+      ws.onerror = e => console.error('WS erro:', e);
+    }
+
+    // ── Inicia ────────────────────────────────────────────
+    conectarWS();
+  </script>
+</body>
+</html>

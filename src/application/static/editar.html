@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editar Leitura — Estação Meteorológica IoT</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a class="logo" href="/">🌦️ Estação IoT</a>
+    <div class="nav-links">
+      <a href="/">Dashboard</a>
+      <a href="/historico.html">Histórico</a>
+    </div>
+  </nav>
+
+  <div id="toast"></div>
+
+  <main class="container" style="max-width:560px">
+    <div class="page-header">
+      <h1 id="titulo">Editar Leitura</h1>
+      <a href="/historico.html" class="btn btn-ghost btn-sm">← Voltar</a>
+    </div>
+
+    <div class="card">
+      <form id="editForm" novalidate>
+        <div class="form-group">
+          <label for="temperatura">🌡️ Temperatura (°C)</label>
+          <input type="number" id="temperatura" step="0.1" placeholder="Ex: 25.5" required>
+        </div>
+        <div class="form-group">
+          <label for="umidade">💧 Umidade (%)</label>
+          <input type="number" id="umidade" step="0.1" min="0" max="100" placeholder="Ex: 65.0" required>
+        </div>
+        <div class="form-group">
+          <label for="pressao">🌬️ Pressão (hPa) <span style="color:var(--muted);font-weight:400">— opcional</span></label>
+          <input type="number" id="pressao" step="0.1" placeholder="Ex: 1013.2">
+        </div>
+        <div class="form-group">
+          <label for="localizacao">📍 Localização <span style="color:var(--muted);font-weight:400">— opcional</span></label>
+          <input type="text" id="localizacao" placeholder="Ex: Lab, Telhado...">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.7rem">
+          💾 Salvar Alterações
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    const id = new URLSearchParams(location.search).get('id');
+
+    function toast(msg, err = false) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = 'show' + (err ? ' error' : '');
+      setTimeout(() => el.className = '', 3500);
+    }
+
+    // Pré-carrega dados da leitura
+    async function carregar() {
+      if (!id) { toast('ID não informado na URL', true); return; }
+      document.getElementById('titulo').textContent = `Editar Leitura #${id}`;
+
+      const r = await fetch(`/api/leituras/${id}`);
+      if (!r.ok) { toast('Leitura não encontrada', true); return; }
+      const l = await r.json();
+
+      document.getElementById('temperatura').value = l.temperatura ?? '';
+      document.getElementById('umidade').value     = l.umidade ?? '';
+      document.getElementById('pressao').value     = l.pressao ?? '';
+      document.getElementById('localizacao').value = l.localizacao ?? '';
+    }
+
+    // Submit via PUT
+    document.getElementById('editForm').addEventListener('submit', async e => {
+      e.preventDefault();
+
+      const pressaoVal  = document.getElementById('pressao').value.trim();
+      const localizacao = document.getElementById('localizacao').value.trim();
+
+      const body = {
+        temperatura: parseFloat(document.getElementById('temperatura').value),
+        umidade:     parseFloat(document.getElementById('umidade').value),
+        pressao:     pressaoVal  ? parseFloat(pressaoVal)  : null,
+        localizacao: localizacao ? localizacao : null,
+      };
+
+      const r = await fetch(`/api/leituras/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (r.ok) {
+        toast('✅ Leitura atualizada!');
+        setTimeout(() => window.location.href = '/historico.html', 1200);
+      } else {
+        toast('Erro ao salvar alterações', true);
+      }
+    });
+
+    carregar();
+  </script>
+</body>
+</html>

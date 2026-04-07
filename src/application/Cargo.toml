@@ -1,0 +1,28 @@
+[package]
+name = "sistema_meteorologico"
+version = "0.1.0"
+edition = "2021"
+
+# Binário principal — servidor web
+[[bin]]
+name = "servidor"
+path = "src/main.rs"
+
+# Binário auxiliar — simulador MQTT
+[[bin]]
+name = "simulador"
+path = "src/simulador.rs"
+
+[dependencies]
+actix-web = "4"
+actix-files = "0.6"
+actix-ws = "0.3"
+futures-util = { version = "0.3", default-features = false }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sqlx = { version = "0.8", features = ["sqlite", "runtime-tokio-rustls", "macros", "chrono"] }
+tokio = { version = "1.43", features = ["full"] }
+rumqttc = "0.24"
+rand = "0.8"
+chrono = { version = "0.4", features = ["serde"] }
+dotenvy = "0.15"

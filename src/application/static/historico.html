@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histórico — Estação Meteorológica IoT</title>
+  <meta name="description" content="Histórico completo das leituras da estação meteorológica com paginação">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a class="logo" href="/">🌦️ Estação IoT</a>
+    <div class="nav-links">
+      <a href="/">Dashboard</a>
+      <a href="/historico.html" class="active">Histórico</a>
+    </div>
+  </nav>
+
+  <div id="toast"></div>
+
+  <main class="container">
+    <div class="page-header">
+      <h1>Histórico de Leituras</h1>
+      <span id="totalInfo" style="color:var(--muted);font-size:.875rem"></span>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Temperatura</th><th>Umidade</th>
+              <th>Pressão</th><th>Local</th><th>Data/Hora</th><th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaCorpo"></tbody>
+        </table>
+      </div>
+
+      <div class="pagination" id="paginacao"></div>
+    </div>
+  </main>
+
+  <script>
+    const LIMIT = 15;
+    let offset = 0;
+    let total  = 0;
+
+    function fmt(n, u) { return n != null ? n.toFixed(1) + u : '—'; }
+    function formatTs(ts) {
+      const d = new Date(ts);
+      return isNaN(d) ? ts : d.toLocaleString('pt-BR');
+    }
+    function toast(msg, err = false) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = 'show' + (err ? ' error' : '');
+      setTimeout(() => el.className = '', 3000);
+    }
+
+    async function carregar() {
+      const r = await fetch(`/api/leituras?limit=${LIMIT}&offset=${offset}`);
+      if (!r.ok) { toast('Erro ao carregar dados', true); return; }
+      const res = await r.json();
+      total = res.total;
+
+      document.getElementById('totalInfo').textContent = `${total} registros no total`;
+
+      const corpo = document.getElementById('tabelaCorpo');
+      if (!res.dados.length) {
+        corpo.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">Sem leituras</td></tr>';
+      } else {
+        corpo.innerHTML = res.dados.map(l => `
+          <tr id="row-${l.id}">
+            <td style="color:var(--muted)">#${l.id}</td>
+            <td><strong style="color:var(--amber)">${fmt(l.temperatura,'°C')}</strong></td>
+            <td><strong style="color:var(--cyan)">${fmt(l.umidade,'%')}</strong></td>
+            <td>${l.pressao != null ? fmt(l.pressao,' hPa') : '<span style="color:var(--muted)">—</span>'}</td>
+            <td><span class="badge badge-loc">${l.localizacao ?? 'Lab'}</span></td>
+            <td style="color:var(--muted);font-size:.82rem">${formatTs(l.timestamp)}</td>
+            <td style="display:flex;gap:.4rem">
+              <a class="btn btn-warning btn-sm" href="/editar.html?id=${l.id}">✏️ Editar</a>
+              <button class="btn btn-danger btn-sm" onclick="deletar(${l.id})">🗑️ Excluir</button>
+            </td>
+          </tr>`).join('');
+      }
+
+      // Paginação
+      const totalPages = Math.ceil(total / LIMIT);
+      const currentPage = Math.floor(offset / LIMIT) + 1;
+      document.getElementById('paginacao').innerHTML = `
+        <button class="btn btn-ghost btn-sm" onclick="mudarPagina(-1)" ${offset === 0 ? 'disabled' : ''}>← Anterior</button>
+        <span class="page-info">Página ${currentPage} de ${totalPages || 1}</span>
+        <button class="btn btn-ghost btn-sm" onclick="mudarPagina(1)" ${offset + LIMIT >= total ? 'disabled' : ''}>Próxima →</button>`;
+    }
+
+    function mudarPagina(dir) {
+      offset = Math.max(0, offset + dir * LIMIT);
+      carregar();
+    }
+
+    async function deletar(id) {
+      if (!confirm(`Excluir leitura #${id}?`)) return;
+      const r = await fetch(`/api/leituras/${id}`, { method: 'DELETE' });
+      if (r.ok) {
+        document.getElementById(`row-${id}`)?.remove();
+        total--;
+        toast(`Leitura #${id} excluída`);
+        document.getElementById('totalInfo').textContent = `${total} registros no total`;
+      } else {
+        toast('Erro ao excluir', true);
+      }
+    }
+
+    carregar();
+  </script>
+</body>
+</html>
