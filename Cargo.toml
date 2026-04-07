@@ -1,0 +1,7 @@
+[workspace]
+resolver = "2"
+members = [
+    "src/application",
+    "src/esp_code",
+    # esp_code usa toolchain Xtensa (ESP32) separada — compilar de dentro de src/esp_code
+]

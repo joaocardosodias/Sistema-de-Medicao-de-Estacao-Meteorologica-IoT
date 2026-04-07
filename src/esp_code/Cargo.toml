@@ -1,0 +1,19 @@
+[package]
+name = "esp_code"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+esp-idf-sys = { version = "0.37", features = ["binstart"] }
+esp-idf-hal = "0.46"
+esp-idf-svc = { version = "0.52", features = ["experimental"] }
+
+embedded-hal = "0.2.7"
+dht-sensor   = "0.3.0"
+bme280       = "0.5.1"
+
+anyhow = "1"
+log    = "0.4"
+
+[build-dependencies]
+embuild = "0.33"

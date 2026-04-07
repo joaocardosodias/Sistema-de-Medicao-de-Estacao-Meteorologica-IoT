@@ -1,0 +1,8 @@
+/target/
+**/target/
+**/*.rs.bk
+*.db-shm
+*.db-wal
+.env
+.embuild/
+**/.embuild/
