@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard — Estação Meteorológica IoT</title>
-  <meta name="description" content="Painel principal com leituras em tempo real da estação meteorológica IoT">
+  <title>Dashboard — Estacao Meteorologica IoT</title>
+  <meta name="description" content="Painel principal com leituras em tempo real da estacao meteorologica IoT">
   <link rel="stylesheet" href="/css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <nav class="navbar">
-    <a class="logo" href="/">🌦️ Estação IoT</a>
+    <a class="logo" href="/">Estacao IoT</a>
     <div class="nav-links">
       <a href="/" class="active">Dashboard</a>
-      <a href="/historico.html">Histórico</a>
+      <a href="/historico.html">Historico</a>
     </div>
   </nav>
 
@@ -22,36 +22,32 @@
   <main class="container">
     <div class="page-header">
       <h1>Dashboard</h1>
-      <!-- Indicador de status da conexão WebSocket -->
       <div class="refresh-badge" id="wsBadge">
         <span class="pulse" id="wsPulse" style="background:#8a6a5c"></span>
         <span id="wsStatus">Conectando...</span>
       </div>
     </div>
 
-    <!-- Stat cards -->
     <div class="stats-grid" id="statsGrid">
-      <div class="stat-card stat-amber"><div class="icon">🌡️</div><div class="val skeleton" style="width:80px;height:2rem"></div><div class="lbl">Média Temperatura</div></div>
-      <div class="stat-card stat-red">  <div class="icon">🔥</div><div class="val skeleton" style="width:80px;height:2rem"></div><div class="lbl">Máxima Temperatura</div></div>
-      <div class="stat-card stat-blue"> <div class="icon">❄️</div><div class="val skeleton" style="width:80px;height:2rem"></div><div class="lbl">Mínima Temperatura</div></div>
-      <div class="stat-card stat-cyan"> <div class="icon">💧</div><div class="val skeleton" style="width:80px;height:2rem"></div><div class="lbl">Média Umidade</div></div>
+      <div class="stat-card stat-amber"><div class="val skeleton" style="width:80px;height:2rem"></div><div class="lbl">Media Temperatura</div></div>
+      <div class="stat-card stat-red">  <div class="val skeleton" style="width:80px;height:2rem"></div><div class="lbl">Maxima Temperatura</div></div>
+      <div class="stat-card stat-blue"> <div class="val skeleton" style="width:80px;height:2rem"></div><div class="lbl">Minima Temperatura</div></div>
+      <div class="stat-card stat-cyan"> <div class="val skeleton" style="width:80px;height:2rem"></div><div class="lbl">Media Umidade</div></div>
     </div>
 
-    <!-- Gráfico temporal -->
     <div class="card chart-card">
-      <div class="card-header"><h2>Variação Temporal (últimas 20 leituras)</h2></div>
+      <div class="card-header"><h2>Variacao Temporal (ultimas 20 leituras)</h2></div>
       <canvas id="grafico"></canvas>
     </div>
 
-    <!-- Tabela últimas leituras -->
     <div class="card">
-      <div class="card-header"><h2>Últimas 10 Leituras</h2></div>
+      <div class="card-header"><h2>Ultimas 10 Leituras</h2></div>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th>ID</th><th>Temperatura</th><th>Umidade</th>
-              <th>Pressão</th><th>Local</th><th>Data/Hora</th>
+              <th>Pressao</th><th>Local</th><th>Data/Hora</th>
             </tr>
           </thead>
           <tbody id="tabelaCorpo"></tbody>
@@ -61,13 +57,11 @@
   </main>
 
   <script>
-    // ── Globals ───────────────────────────────────────────
     let chart = null;
     const MAX_TABLE = 10;
     const MAX_CHART = 20;
 
-    // ── Utils ─────────────────────────────────────────────
-    function fmt(n, u) { return n != null ? n.toFixed(1) + u : '—'; }
+    function fmt(n, u) { return n != null ? n.toFixed(1) + u : '-'; }
     function formatTs(ts) {
       const d = new Date(ts);
       return isNaN(d) ? ts : d.toLocaleString('pt-BR');
@@ -87,25 +81,23 @@
         <td><span style="color:var(--muted)">#${l.id}</span></td>
         <td><strong style="color:#CE422B">${fmt(l.temperatura,'°C')}</strong></td>
         <td><strong style="color:#e8792a">${fmt(l.umidade,'%')}</strong></td>
-        <td>${l.pressao != null ? fmt(l.pressao,' hPa') : '<span style="color:var(--muted)">—</span>'}</td>
+        <td>${l.pressao != null ? fmt(l.pressao,' hPa') : '<span style="color:var(--muted)">-</span>'}</td>
         <td><span class="badge badge-loc">${l.localizacao ?? 'Lab'}</span></td>
         <td style="color:var(--muted);font-size:.8rem">${formatTs(l.timestamp)}</td>
       </tr>`;
     }
 
-    // ── Estatísticas ──────────────────────────────────────
     async function carregarStats() {
       const r = await fetch('/api/estatisticas');
       if (!r.ok) return;
       const s = await r.json();
       document.getElementById('statsGrid').innerHTML = `
-        <div class="stat-card stat-amber"><div class="icon">🌡️</div><div class="val">${fmt(s.media_temp,'°C')}</div><div class="lbl">Média Temperatura</div></div>
-        <div class="stat-card stat-red">  <div class="icon">🔥</div><div class="val">${fmt(s.max_temp,'°C')}</div><div class="lbl">Máxima Temperatura</div></div>
-        <div class="stat-card stat-blue"> <div class="icon">❄️</div><div class="val">${fmt(s.min_temp,'°C')}</div><div class="lbl">Mínima Temperatura</div></div>
-        <div class="stat-card stat-cyan"> <div class="icon">💧</div><div class="val">${fmt(s.media_umid,'%')}</div><div class="lbl">Média Umidade</div></div>`;
+        <div class="stat-card stat-amber"><div class="val">${fmt(s.media_temp,'°C')}</div><div class="lbl">Media Temperatura</div></div>
+        <div class="stat-card stat-red">  <div class="val">${fmt(s.max_temp,'°C')}</div><div class="lbl">Maxima Temperatura</div></div>
+        <div class="stat-card stat-blue"> <div class="val">${fmt(s.min_temp,'°C')}</div><div class="lbl">Minima Temperatura</div></div>
+        <div class="stat-card stat-cyan"> <div class="val">${fmt(s.media_umid,'%')}</div><div class="lbl">Media Umidade</div></div>`;
     }
 
-    // ── Gráfico ───────────────────────────────────────────
     async function carregarGrafico() {
       const r = await fetch('/api/grafico?limit=20');
       if (!r.ok) return;
@@ -153,7 +145,6 @@
       });
     }
 
-    // Adiciona ponto ao gráfico sem recarregar tudo
     function adicionarPontoGrafico(l) {
       if (!chart) return;
       chart.data.labels.push(formatHora(l.timestamp));
@@ -166,7 +157,6 @@
       chart.update('none');
     }
 
-    // ── Tabela ────────────────────────────────────────────
     async function carregarTabela() {
       const r = await fetch('/api/leituras?limit=10');
       if (!r.ok) return;
@@ -176,19 +166,16 @@
         '<tr><td colspan="6" style="text-align:center;color:var(--muted)">Sem leituras</td></tr>';
     }
 
-    // Prepend nova linha na tabela, limita a MAX_TABLE
     function adicionarLinhaTabela(l) {
       const corpo = document.getElementById('tabelaCorpo');
       corpo.insertAdjacentHTML('afterbegin', rowHTML(l));
       while (corpo.rows.length > MAX_TABLE) corpo.deleteRow(corpo.rows.length - 1);
     }
 
-    // ── Carga inicial ─────────────────────────────────────
     async function carregarTudo() {
       await Promise.all([carregarStats(), carregarGrafico(), carregarTabela()]);
     }
 
-    // ── WebSocket ─────────────────────────────────────────
     let wsReconnectDelay = 1000;
 
     function setWsStatus(online) {
@@ -208,36 +195,32 @@
       const ws = new WebSocket(`${proto}//${location.host}/ws`);
 
       ws.onopen = () => {
-        console.log('✅ WebSocket conectado');
         wsReconnectDelay = 1000;
         setWsStatus(true);
-        carregarTudo(); // garante dados frescos ao reconectar
+        carregarTudo();
       };
 
       ws.onmessage = ({ data }) => {
         try {
           const leitura = JSON.parse(data);
-          // Atualiza dashboard sem reload
           adicionarLinhaTabela(leitura);
           adicionarPontoGrafico(leitura);
-          carregarStats(); // recalcula média/min/max com novo total
-          toast(`📥 Nova leitura: ${leitura.temperatura?.toFixed(1)}°C — ${leitura.umidade?.toFixed(1)}%`);
+          carregarStats();
+          toast(`Nova leitura: ${leitura.temperatura?.toFixed(1)}°C — ${leitura.umidade?.toFixed(1)}%`);
         } catch (e) {
-          console.warn('WS msg inválida:', e);
+          console.warn('WS msg invalida:', e);
         }
       };
 
       ws.onclose = () => {
         setWsStatus(false);
-        console.warn(`🔌 WS fechado. Reconectando em ${wsReconnectDelay}ms`);
         setTimeout(conectarWS, wsReconnectDelay);
-        wsReconnectDelay = Math.min(wsReconnectDelay * 2, 30_000); // backoff exponencial até 30s
+        wsReconnectDelay = Math.min(wsReconnectDelay * 2, 30_000);
       };
 
       ws.onerror = e => console.error('WS erro:', e);
     }
 
-    // ── Inicia ────────────────────────────────────────────
     conectarWS();
   </script>
 </body>

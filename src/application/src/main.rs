@@ -17,7 +17,7 @@ async fn main() -> std::io::Result<()> {
     let pool = db::init_db(&db_url)
         .await
         .expect("Falha ao inicializar o banco de dados");
-    println!("✅ Banco de dados inicializado.");
+    println!("Banco de dados inicializado.");
 
     let (tx, _) = broadcast::channel::<String>(256);
     let tx_data = web::Data::new(tx.clone());
@@ -28,7 +28,7 @@ async fn main() -> std::io::Result<()> {
         mqtt::start_mqtt_client(mqtt_pool, mqtt_tx).await;
     });
 
-    println!("🌐 Servidor rodando em http://0.0.0.0:8080");
+    println!("Servidor rodando em http://0.0.0.0:8080");
 
     let app_data = web::Data::new(pool);
 

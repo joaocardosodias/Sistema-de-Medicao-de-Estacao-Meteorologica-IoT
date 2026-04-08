@@ -1,19 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --bg:         #0e0905;          /* marrom quase preto */
-  --surface:    #1a100a;          /* superfície escura */
-  --card:       #221409;          /* card fundo */
-  --card-hover: #2d1c0f;          /* card hover */
-  --border:     rgba(206,66,43,.18); /* laranja Rust translúcido */
-  --text:       #f0e6df;          /* branco quente */
-  --muted:      #8a6a5c;          /* marrom acinzentado */
-  --amber:      #e8792a;          /* laranja médio */
-  --cyan:       #CE422B;          /* laranja Rust oficial */
-  --violet:     #a63d2f;          /* marrom-avermelhado */
-  --green:      #b8860b;          /* ouro escuro (sucesso) */
-  --red:        #c0392b;          /* vermelho */
-  --blue:       #f5a623;          /* âmbar dourado */
+  --bg:         #0e0905;
+  --surface:    #1a100a;
+  --card:       #221409;
+  --card-hover: #2d1c0f;
+  --border:     rgba(206,66,43,.18);
+  --text:       #f0e6df;
+  --muted:      #8a6a5c;
+  --amber:      #e8792a;
+  --cyan:       #CE422B;
+  --violet:     #a63d2f;
+  --green:      #b8860b;
+  --red:        #c0392b;
+  --blue:       #f5a623;
   --radius:     14px;
   --shadow:     0 4px 24px rgba(0,0,0,0.5);
 }
@@ -27,7 +27,6 @@ body {
   min-height: 100vh;
 }
 
-/* ── Navbar ─────────────────────────────────────────── */
 .navbar {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
@@ -43,7 +42,7 @@ body {
 .navbar .logo {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #e8792a;          /* laranja Rust */
+  color: #e8792a;
   display: flex;
   align-items: center;
   gap: .5rem;
@@ -65,7 +64,6 @@ body {
   color: #e8792a;
 }
 
-/* ── Layout ─────────────────────────────────────────── */
 .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
 
 .page-header {
@@ -78,7 +76,6 @@ body {
 }
 .page-header h1 { font-size: 1.6rem; font-weight: 700; }
 
-/* ── Cards ──────────────────────────────────────────── */
 .card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -95,7 +92,6 @@ body {
 }
 .card-header h2 { font-size: 1rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
 
-/* Stat cards */
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
 .stat-card {
   background: var(--card);
@@ -118,7 +114,6 @@ body {
 .stat-cyan  { border-top: 3px solid var(--cyan); }
 .stat-cyan  .val { color: var(--cyan); }
 
-/* ── Table ──────────────────────────────────────────── */
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: .9rem; }
 th { padding: .75rem 1rem; text-align: left; color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--border); font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
@@ -127,7 +122,6 @@ tr:last-child td { border-bottom: none; }
 tbody tr { transition: background .15s; }
 tbody tr:hover { background: rgba(255,255,255,0.03); }
 
-/* ── Buttons ────────────────────────────────────────── */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -149,7 +143,6 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
 .btn-ghost    { background: rgba(255,255,255,.07); color: var(--text); }
 .btn-sm       { padding: .3rem .65rem; font-size: .8rem; }
 
-/* ── Form ───────────────────────────────────────────── */
 .form-group { margin-bottom: 1.25rem; }
 label { display: block; font-size: .875rem; font-weight: 500; color: var(--muted); margin-bottom: .45rem; }
 input[type="text"], input[type="number"] {
@@ -165,7 +158,6 @@ input[type="text"], input[type="number"] {
 }
 input:focus { outline: none; border-color: #e8792a; }
 
-/* ── Badge / Chip ───────────────────────────────────── */
 .badge {
   display: inline-block;
   padding: .2rem .6rem;
@@ -175,7 +167,6 @@ input:focus { outline: none; border-color: #e8792a; }
 }
 .badge-loc { background: rgba(232,121,42,.15); color: #e8792a; }
 
-/* ── Refresh indicator ──────────────────────────────── */
 .refresh-badge {
   display: flex;
   align-items: center;
@@ -189,7 +180,7 @@ input:focus { outline: none; border-color: #e8792a; }
 }
 .pulse {
   width: 8px; height: 8px;
-  background: #e8792a;     /* laranja Rust */
+  background: #e8792a;
   border-radius: 50%;
   animation: pulse 2s infinite;
 }
@@ -198,7 +189,6 @@ input:focus { outline: none; border-color: #e8792a; }
   50%       { opacity: .4; transform: scale(.7); }
 }
 
-/* ── Pagination ─────────────────────────────────────── */
 .pagination {
   display: flex;
   align-items: center;
@@ -208,12 +198,11 @@ input:focus { outline: none; border-color: #e8792a; }
 }
 .page-info { color: var(--muted); font-size: .875rem; }
 
-/* ── Toast ─────────────────────────────────────────── */
 #toast {
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
-  background: #e8792a;     /* laranja Rust */
+  background: #e8792a;
   color: #fff;
   padding: .75rem 1.25rem;
   border-radius: 10px;
@@ -228,7 +217,6 @@ input:focus { outline: none; border-color: #e8792a; }
 #toast.show { opacity: 1; transform: translateY(0); }
 #toast.error { background: var(--red); color: #fff; }
 
-/* ── Loading skeleton ───────────────────────────────── */
 .skeleton {
   background: linear-gradient(90deg, var(--card) 25%, var(--card-hover) 50%, var(--card) 75%);
   background-size: 200% 100%;
@@ -238,10 +226,8 @@ input:focus { outline: none; border-color: #e8792a; }
 }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-/* ── Chart canvas ───────────────────────────────────── */
 .chart-card canvas { max-height: 280px; }
 
-/* ── Responsive ─────────────────────────────────────── */
 @media (max-width: 640px) {
   .navbar { padding: 0 1rem; }
   .container { padding: 1.25rem 1rem; }

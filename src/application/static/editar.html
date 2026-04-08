@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Editar Leitura — Estação Meteorológica IoT</title>
+  <title>Editar Leitura — Estacao Meteorologica IoT</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
   <nav class="navbar">
-    <a class="logo" href="/">🌦️ Estação IoT</a>
+    <a class="logo" href="/">Estacao IoT</a>
     <div class="nav-links">
       <a href="/">Dashboard</a>
-      <a href="/historico.html">Histórico</a>
+      <a href="/historico.html">Historico</a>
     </div>
   </nav>
 
@@ -20,29 +20,29 @@
   <main class="container" style="max-width:560px">
     <div class="page-header">
       <h1 id="titulo">Editar Leitura</h1>
-      <a href="/historico.html" class="btn btn-ghost btn-sm">← Voltar</a>
+      <a href="/historico.html" class="btn btn-ghost btn-sm">Voltar</a>
     </div>
 
     <div class="card">
       <form id="editForm" novalidate>
         <div class="form-group">
-          <label for="temperatura">🌡️ Temperatura (°C)</label>
+          <label for="temperatura">Temperatura (°C)</label>
           <input type="number" id="temperatura" step="0.1" placeholder="Ex: 25.5" required>
         </div>
         <div class="form-group">
-          <label for="umidade">💧 Umidade (%)</label>
+          <label for="umidade">Umidade (%)</label>
           <input type="number" id="umidade" step="0.1" min="0" max="100" placeholder="Ex: 65.0" required>
         </div>
         <div class="form-group">
-          <label for="pressao">🌬️ Pressão (hPa) <span style="color:var(--muted);font-weight:400">— opcional</span></label>
+          <label for="pressao">Pressao (hPa) <span style="color:var(--muted);font-weight:400">— opcional</span></label>
           <input type="number" id="pressao" step="0.1" placeholder="Ex: 1013.2">
         </div>
         <div class="form-group">
-          <label for="localizacao">📍 Localização <span style="color:var(--muted);font-weight:400">— opcional</span></label>
+          <label for="localizacao">Localizacao <span style="color:var(--muted);font-weight:400">— opcional</span></label>
           <input type="text" id="localizacao" placeholder="Ex: Lab, Telhado...">
         </div>
         <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.7rem">
-          💾 Salvar Alterações
+          Salvar Alteracoes
         </button>
       </form>
     </div>
@@ -58,13 +58,12 @@
       setTimeout(() => el.className = '', 3500);
     }
 
-    // Pré-carrega dados da leitura
     async function carregar() {
-      if (!id) { toast('ID não informado na URL', true); return; }
+      if (!id) { toast('ID nao informado na URL', true); return; }
       document.getElementById('titulo').textContent = `Editar Leitura #${id}`;
 
       const r = await fetch(`/api/leituras/${id}`);
-      if (!r.ok) { toast('Leitura não encontrada', true); return; }
+      if (!r.ok) { toast('Leitura nao encontrada', true); return; }
       const l = await r.json();
 
       document.getElementById('temperatura').value = l.temperatura ?? '';
@@ -73,7 +72,6 @@
       document.getElementById('localizacao').value = l.localizacao ?? '';
     }
 
-    // Submit via PUT
     document.getElementById('editForm').addEventListener('submit', async e => {
       e.preventDefault();
 
@@ -94,10 +92,10 @@
       });
 
       if (r.ok) {
-        toast('✅ Leitura atualizada!');
+        toast('Leitura atualizada!');
         setTimeout(() => window.location.href = '/historico.html', 1200);
       } else {
-        toast('Erro ao salvar alterações', true);
+        toast('Erro ao salvar alteracoes', true);
       }
     });
 
