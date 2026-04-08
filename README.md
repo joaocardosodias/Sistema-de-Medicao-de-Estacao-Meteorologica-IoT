@@ -257,14 +257,3 @@ Os campos `pressao` e `localizacao` sao opcionais.
 
 ---
 
-## Criterios de Avaliacao
-
-| Criterio | Peso | Status | Implementacao |
-|---|---|---|---|
-| Comunicacao Dispositivo → API | 20% | Atendido | ESP32 publica via MQTT; backend assina e persiste no banco. Simulador disponivel como alternativa sem hardware |
-| API REST completa | 25% | Atendido | GET, POST, PUT, DELETE em `/api/leituras`, mais `/api/estatisticas` e `/api/grafico` |
-| Banco de dados — schema e CRUD | 15% | Atendido | Tabela `leituras` identica ao schema sugerido; WAL mode ativo; migrations versionadas; 141 leituras no `dados.db` |
-| Interface Web funcional | 20% | Atendido | `index.html` (dashboard), `historico.html` (paginacao + exclusao), `editar.html` (formulario PUT) |
-| Grafico de variacao temporal | 10% | Atendido | Chart.js com series de temperatura e umidade, atualizado em tempo real via WebSocket |
-| README com instrucoes | 5% | Atendido | Este documento |
-| Organizacao e boas praticas | 5% | Atendido | Modulos separados (api, db, models, mqtt), migrations, CSS externo, `.gitignore` configurado |
